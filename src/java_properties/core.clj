@@ -19,10 +19,10 @@
   (->> (s/split s #",")
        (map s/trim)))
 
-(defn map-vals [f m]
+(defn- map-vals [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
-(defn map-keys [f m]
+(defn- map-keys [f m]
   (into {} (for [[k v] m] [(f k) v])))
 
 (defn remove-vals [f m]
@@ -37,7 +37,6 @@
         (pprint arg out))
       (.toString out))))
 
-
 (defn- kebab-to-camelcase [k]
   (let [parts (-> k
                   name
@@ -49,7 +48,6 @@
         s/join
         keyword)))
 
-
 (defn kebab-conf-to-camelcase [conf]
   (map-keys kebab-to-camelcase conf))
 
@@ -58,7 +56,6 @@
                                           "yyyy-MM-dd HH:mm:ss[.SSS]X"
                                           "yyyy-MM-dd'T'HH:mm:ss.SSSSSSX"
                                           "yyyy-MM-dd HH:mm:ss.SSSSSSX"]))
-
 
 (defn parse-java-util-date [^String s]
   (loop [formatters datetime-formatters]
@@ -70,13 +67,11 @@
             (throw e))))
       (recur (next formatters)))))
 
-
 (defn merge-common [d keyword]
   (let [c (get d keyword)]
     (->> (dissoc d keyword)
          (map (fn [[k d]] [k (merge c d)]))
          (into {}))))
-
 
 (defn ordered-configs [d]
   (->> d
@@ -84,7 +79,6 @@
        sort
        (map #(-> (get d %)
                  (assoc :key %)))))
-
 
 (declare group-config)
 
@@ -98,7 +92,7 @@
        (map-keys #(second (s/split % #"\." 2)))
        deeper))
 
-(defn compile-dict [d]
+(defn- compile-dict [d]
   (->> d
        (group-by #(keyword (first (s/split (first %) #"\."))))
        (map-vals strip-prefix)))
@@ -107,21 +101,21 @@
   `(and (int? ~x)
         (or (pos? ~x) (zero? ~x))))
 
-(defn idx? [v]
+(defn- idx? [v]
   (try
     (-> v name read-string idxv?)
     (catch NumberFormatException _ false)))
 
 (declare convert-arrays)
 
-(defn sparsed-array [m]
+(defn- sparsed-array [m]
   (let [idxs (map #(-> % name read-string num) (keys m))
         size (apply max idxs)]
     (vec (for [x (range 0 (inc size))
                :let [val (get m (-> x str keyword))]]
            (convert-arrays val)))))
 
-(defn convert-arrays [val]
+(defn- convert-arrays [val]
   (if (map? val)
     (if (every? idx? (keys val))
       (sparsed-array val)
@@ -131,7 +125,7 @@
 
     val))
 
-(defn group-config [d & [{with-arrays :with-arrays}]]
+(defn- group-config [d & [{with-arrays :with-arrays}]]
   (cond->> d
            true compile-dict
            with-arrays convert-arrays))
@@ -139,7 +133,7 @@
 (defn load-config [app-name & [{:keys [config] :as options}]]
   (group-config
     (merge
-      (-> app-name (str ".properties") io/resource load-props)
+      (some-> app-name (str ".properties") io/resource load-props)
       (when config
-        (-> config io/file load-props)))
+        (some-> config io/file load-props)))
     options))
