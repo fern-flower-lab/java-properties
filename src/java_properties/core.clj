@@ -1,6 +1,7 @@
 (ns java-properties.core
   (:require [clojure.java.io :as io]
             [clojure.string :as s]
+            [clojure.edn :refer [read-string]]
             [clojure.pprint :refer [pprint]])
   (:import (java.util Properties Date)
            (java.io Reader StringWriter)
@@ -88,23 +89,57 @@
 (declare group-config)
 
 (defn- deeper [d]
-       (if (contains? d nil)
-         (get d nil)
-         (group-config d)))
+  (if (contains? d nil)
+    (get d nil)
+    (group-config d)))
 
 (defn- strip-prefix [pairs]
-       (->> pairs
-            (map-keys #(second (s/split % #"\." 2)))
-            deeper))
+  (->> pairs
+       (map-keys #(second (s/split % #"\." 2)))
+       deeper))
 
-(defn group-config [d]
-      (->> d
-           (group-by #(keyword (first (s/split (first %) #"\."))))
-           (map-vals strip-prefix)))
+(defn compile-dict [d]
+  (->> d
+       (group-by #(keyword (first (s/split (first %) #"\."))))
+       (map-vals strip-prefix)))
+
+(defmacro ^:private idxv? [x]
+  `(and (int? ~x)
+        (or (pos? ~x) (zero? ~x))))
+
+(defn idx? [v]
+  (try
+    (-> v name read-string idxv?)
+    (catch NumberFormatException _ false)))
+
+(declare convert-arrays)
+
+(defn sparsed-array [m]
+  (let [idxs (map #(-> % name read-string num) (keys m))
+        size (apply max idxs)]
+    (vec (for [x (range 0 (inc size))
+               :let [val (get m (-> x str keyword))]]
+           (convert-arrays val)))))
+
+(defn convert-arrays [val]
+  (if (map? val)
+    (if (every? idx? (keys val))
+      (sparsed-array val)
+      (into {}
+            (for [[k v] val]
+              [k (convert-arrays v)])))
+
+    val))
+
+(defn group-config [d & [{with-arrays :with-arrays}]]
+  (cond->> d
+           true compile-dict
+           with-arrays convert-arrays))
 
 (defn load-config [app-name & [{:keys [config] :as options}]]
   (group-config
     (merge
       (-> app-name (str ".properties") io/resource load-props)
       (when config
-        (-> config io/file load-props)))))
+        (-> config io/file load-props)))
+    options))
