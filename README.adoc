@@ -1,0 +1,91 @@
+= Java Properties
+
+image:https://img.shields.io/github/license/fern-flower-lab/java-properties[GitHub]
+image:https://img.shields.io/clojars/v/ai.z7/java-properties.svg[]
+image:https://img.shields.io/github/v/tag/fern-flower-lab/java-properties[GitHub tag (latest by date)]
+image:https://img.shields.io/github/last-commit/fern-flower-lab/java-properties[GitHub last commit]
+
+
+== Objectives
+
+This reader for Clojure is a small but powerful library that makes possible to use a regular `.properties` configurations that familiar to every Java programmer in any Clojure project.
+No more headaches even if you need to import the configurations from other (not Clojure) project.
+
+The library has **no dependencies** and written in pure Clojure.
+
+In contrary to other libraries it not delivers any specific typings or other sugar.
+
+Mainly intended to hybrid projects, migrations and for use by pure-Java integrations.
+
+== Usage
+
+=== Reading the config
+
+[source, clojure]
+----
+(require '[java-properties.core :as jconf])
+;; nil
+(def conf-simple (jconf/load-config "test"))
+;; conf-simple
+;; {:backend {:0 {:enabled true, :bootstrap-servers "127.0.0.1:9092", :type "kafka", :name "test"}, :2 {:type "http", :name "weak-connection-api", :method "post"}}, :front {:2 {:0 {:mode some}, :1 {:type ttt}}, :4 {:2 {:type 1, :mode zzz}}}, :core {:test-list a, :journal {:port 26333}}}
+(def conf-full (jconf/load-config "test" {:with-arrays true}))
+;; conf-full
+;; {:backend [{:enabled true, :bootstrap-servers "127.0.0.1:9092", :type "kafka", :name "test"} nil {:type "http", :name "weak-connection-api", :method "post"}], :front [nil nil [{:mode some} {:type ttt}] nil [nil nil {:type 1, :mode zzz}]], :core {:test-list a, :journal {:port 26333}}}
+(slurp "ext.properties")
+;; "external.property.name = foo"
+(def conf-full-verride (jconf/load-config "test" {:with-arrays true :config "./ext.properties"}))
+;; conf-full-verride
+;; {:backend [{:enabled true, :bootstrap-servers "127.0.0.1:9092", :type "kafka", :name "test"} nil {:type "http", :name "weak-connection-api", :method "post"}], :front [nil nil [{:mode some} {:type ttt}] nil [nil nil {:type 1, :mode zzz}]], :core {:test-list a, :journal {:port 26333}}, :external {:property {:name foo}}}
+----
+
+=== Helpers
+
+The library also contains some handy methods-helpers
+
+.Pretty formatting
+[source, clojure]
+----
+(-> conf-full jconf/pretty println)
+;; {:backend
+;;  [{:enabled true,
+;;    :bootstrap-servers "127.0.0.1:9092",
+;;    :type "kafka",
+;;    :name "test"}
+;;   nil
+;;   {:type "http", :name "weak-connection-api", :method "post"}],
+;;  :front
+;;  [nil
+;;   nil
+;;   [{:mode some} {:type ttt}]
+;;   nil
+;;   [nil nil {:type 1, :mode zzz}]],
+;;  :core {:test-list a, :journal {:port 26333}}}
+;nil
+----
+
+.Reading date-time into Java
+[source, clojure]
+----
+(jconf/parse-java-util-date "2012-11-10 09:08:07.006Z")
+; #inst "2012-11-10T09:08:07.006-00:00"
+----
+
+.Parse comma-separated lists
+[source, clojure]
+----
+(jconf/split-comma-separated "a,b,c  , d,e, f g,h")
+; ("a" "b" "c" "d" "e" "f g" "h")
+----
+
+.Un-kebab
+[source, clojure]
+----
+(jconf/kebab-conf-to-camelcase {:a-getter-b {:foo "bar"}})
+{:aGetterB {:foo "bar"}}
+----
+
+== License
+
+©2022 Fern Flower Lab
+
+Distributed under the MIT License.
