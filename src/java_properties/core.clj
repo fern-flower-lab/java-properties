@@ -79,6 +79,28 @@
        sort
        (map #(-> (get d %)
                  (assoc :key %)))))
+(defn hex [ba]
+  (->> (map #(format "%02x" %) ba)
+       (apply str)))
+
+
+(defn unhex [s]
+  (->> (partition 2 s)
+       (map #(Integer/parseInt (apply str %) 16))
+       byte-array))
+
+(def ^:private pairs (atom {}))
+
+(defn extract-strings [line]
+  (let [strings (re-seq #"\"[^\"]+\"" line)]
+    (if (empty? strings)
+      line
+      (loop [li line st strings]
+        (let [term (first st)
+              hashed (some-> term .getBytes hex)]
+          (swap! pairs assoc hashed (some-> term (s/replace "\"" "") keyword))
+          (if (empty? st) li
+                          (recur (s/replace li term hashed) (rest st))))))))
 
 (declare group-config)
 
@@ -125,15 +147,24 @@
 
     val))
 
+(defn- swap-pair* [k]
+  (get @pairs (name k) k))
+
+(defn- restore-keys [d]
+  (map-keys swap-pair* d))
+
 (defn- group-config [d & [{with-arrays :with-arrays}]]
-  (cond->> d
+  (cond->> (map-keys extract-strings d)
            true compile-dict
-           with-arrays convert-arrays))
+           with-arrays convert-arrays
+           (not-empty @pairs) restore-keys))
 
 (defn load-config [app-name & [{:keys [config] :as options}]]
-  (group-config
-    (merge
-      (some-> app-name (str ".properties") io/resource load-props)
-      (when config
-        (some-> config io/file load-props)))
-    options))
+  (let [conf-dict (group-config
+                    (merge
+                      (some-> app-name (str ".properties") io/resource load-props)
+                      (when config
+                        (some-> config io/file load-props)))
+                    options)]
+    (reset! pairs {})
+    conf-dict))

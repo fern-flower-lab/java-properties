@@ -1,4 +1,4 @@
-(defproject ai.z7/java-properties "1.0.2"
+(defproject ai.z7/java-properties "1.1.0"
   :description "Java properties files micro parser for Clojure"
   :url "https://github.com/fern-flower-lab/java-properties"
   :license {:name "MIT"
