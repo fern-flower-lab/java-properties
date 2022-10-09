@@ -19,10 +19,10 @@
   (->> (s/split s #",")
        (map s/trim)))
 
-(defn- map-vals [f m]
+(defn map-vals [f m]
   (into {} (for [[k v] m] [k (f v)])))
 
-(defn- map-keys [f m]
+(defn map-keys [f m]
   (into {} (for [[k v] m] [(f k) v])))
 
 (defn remove-vals [f m]
