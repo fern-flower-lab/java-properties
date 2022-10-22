@@ -1,9 +1,9 @@
 = Java Properties
 
-image:https://img.shields.io/github/license/fern-flower-lab/java-properties[GitHub]
-image:https://img.shields.io/clojars/v/ai.z7/java-properties.svg[]
-image:https://img.shields.io/github/v/tag/fern-flower-lab/java-properties[GitHub tag (latest by date)]
-image:https://img.shields.io/github/last-commit/fern-flower-lab/java-properties[GitHub last commit]
+image:https://img.shields.io/github/license/fern-flower-lab/java-properties?style=for-the-badge[GitHub]
+image:https://img.shields.io/clojars/v/ai.z7/java-properties.svg?style=for-the-badge[]
+image:https://img.shields.io/github/v/tag/fern-flower-lab/java-properties?style=for-the-badge[GitHub tag (latest by date)]
+image:https://img.shields.io/github/last-commit/fern-flower-lab/java-properties?style=for-the-badge[GitHub last commit]
 
 
 == Objectives
