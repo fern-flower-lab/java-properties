@@ -5,11 +5,26 @@
 
 (deftest basic
   (testing "embedded sample (simple test)"
+
+    (log/infof "parsed without arrays: opts=%s" nil)
+
     (let [config (load-config "test")]
-      (log/info nil config)
+
+      (log/info "\n" (pretty config) "\n")
+
       (is (-> config :backend :0 :enabled))
       (is (= (-> config :scheduler :threadPool.threadCount) 12)))
+
+    (log/infof "parsed without arrays: opts=%s" {:with-arrays true})
+
     (let [config (load-config "test" {:with-arrays true})]
-      (log/info {:with-arrays true} config)
+
+      (log/info "\n" (pretty config) "\n")
+
       (is (-> config :backend first :enabled))
-      (is (= (-> config :scheduler :threadPool.threadCount) 12)))))
+      (is (= (-> config :scheduler :threadPool.threadCount) 12))
+      (is (and (-> config :service first (= "foo"))
+               (-> config :service second :bar (= "bar"))
+               (-> config :service last last)))
+      (is (and (-> config :tomato first (= "vvv"))
+               (-> config :tomato second (= "zzz")))))))
