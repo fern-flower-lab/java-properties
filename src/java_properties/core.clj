@@ -92,10 +92,16 @@
 (def ^:private pairs (atom {}))
 
 (defn extract-strings [line]
-  (let [strings (re-seq #"\"[^\"]+\"" line)]
+  (let [line' (-> line
+                  (s/replace #"\[(\d+)\]\." ".$1.")
+                  (s/replace #"\[(\d+)\]\s*=" ".$1=")
+                  (s/replace #"\[(\d+)\]" ".$1.")
+                  (s/replace #"\.+" ".")
+                  (s/replace #"\.+$" ""))
+        strings (re-seq #"\"[^\"]+\"" line')]
     (if (empty? strings)
-      line
-      (loop [li line st strings]
+      line'
+      (loop [li line' st strings]
         (let [term (first st)
               hashed (some-> term .getBytes hex)]
           (swap! pairs assoc hashed (some-> term (s/replace "\"" "") keyword))
