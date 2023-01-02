@@ -8,12 +8,16 @@
            (java.time.format DateTimeFormatter DateTimeParseException)
            (java.time Instant)))
 
+(defn env-props []
+  (reduce (fn [x [y z]] (assoc x y z)) {} (System/getProperties)))
+
 (defn load-props [file]
   (with-open [^Reader reader (io/reader file)]
-    (let [props (Properties.)]
+    (let [props (Properties.)
+          overrides (env-props)]
       (.load props reader)
       (into {} (for [[k v] props]
-                 [k (read-string v)])))))
+                 [k (read-string (get overrides k v))])))))
 
 (defn split-comma-separated [s]
   (->> (s/split s #",")

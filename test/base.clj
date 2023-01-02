@@ -27,4 +27,12 @@
                (-> config :service second :bar (= "bar"))
                (-> config :service last last)))
       (is (and (-> config :tomato first (= "vvv"))
-               (-> config :tomato second (= "zzz")))))))
+               (-> config :tomato second (= "zzz"))))))
+
+  (testing "overriding file values by manual definitions"
+    (System/setProperty "core.journal.port" "11111")
+
+    (let [config (load-config "test")]
+
+      (log/info "\n" (pretty config) "\n")
+      (is (= (-> config :core :journal :port) 11111)))))
