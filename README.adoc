@@ -38,6 +38,25 @@ Mainly intended to hybrid projects, migrations and for use by pure-Java integrat
 ;; {:backend [{:enabled true, :bootstrap-servers "127.0.0.1:9092", :type "kafka", :name "test"} nil {:type "http", :name "weak-connection-api", :method "post"}], :front [nil nil [{:mode some} {:type ttt}] nil [nil nil {:type 1, :mode zzz}]], :core {:test-list a, :journal {:port 26333}}, :external {:property {:name foo}}}
 ----
 
+=== Overriding values
+
+The library supports regular overrides via commandline, like:
+
+[source, bash]
+----
+java -Dapi.port=12345 -jar /path/to/your/compiled.jar
+----
+
+i.e. `-Dapi.port=12345` is stands to override properies file defined `api.port=98765` pair.
+The same result can be achieved by classical call to Java's `setProperty` method upon parsing the configuration:
+
+[source, java]
+----
+(System/setProperty "api.port" "12345")
+----
+
+For more sofistical example, see test cases in the main repo.
+
 === Helpers
 
 The library also contains some handy methods-helpers
@@ -86,6 +105,6 @@ The library also contains some handy methods-helpers
 
 == License
 
-&copy; 2022 Fern Flower Lab
+&copy; 2022-2023 Fern Flower Lab
 
 Distributed under the MIT License.
