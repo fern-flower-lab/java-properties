@@ -17,7 +17,9 @@
           overrides (env-props)]
       (.load props reader)
       (into {} (for [[k v] props]
-                 [k (read-string (get overrides k v))])))))
+                 [k (try (read-string (get overrides k v))
+                         (catch NumberFormatException _
+                           (str (get overrides k v))))])))))
 
 (defn split-comma-separated [s]
   (->> (s/split s #",")
