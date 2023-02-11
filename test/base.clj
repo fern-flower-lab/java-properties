@@ -31,8 +31,10 @@
 
   (testing "overriding file values by manual definitions"
     (System/setProperty "core.journal.port" "11111")
+    (System/setProperty "core.journal.host" "1.2.3.4")
 
     (let [config (load-config "test")]
 
       (log/info "\n" (pretty config) "\n")
-      (is (= (-> config :core :journal :port) 11111)))))
+      (is (= (-> config :core :journal :port) 11111))
+      (is (= (-> config :core :journal :host) "1.2.3.4")))))
