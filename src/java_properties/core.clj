@@ -1,4 +1,5 @@
 (ns java-properties.core
+  (:refer-clojure :exclude [read-string])
   (:require [clojure.java.io :as io]
             [clojure.string :as s]
             [clojure.edn :refer [read-string]]
