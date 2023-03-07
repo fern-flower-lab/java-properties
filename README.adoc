@@ -19,6 +19,43 @@ Mainly intended to hybrid projects, migrations and for use by pure-Java integrat
 
 == Usage
 
+=== Writing the config
+
+The config file is a well known dead simple Java properties:
+
+[source, properties]
+----
+core.journal.port = 26333
+core.journal.host = 4.3.2.1
+
+backend.0.name="string"
+backend.0.type="another string"
+backend.0.enabled=true
+
+backend.2.name="weak-connection-api"
+backend.2.type="http"
+backend.2.method="post"
+
+front.2.0.mode=my-symbol-1
+front.2.1.type=my-symbol-2
+front.4.2.mode=my-symbol-3
+front.4.2.type=1
+
+tomato.0 = "vvv"
+tomato.1 = "zzz"
+
+service[0]="foo"
+service[1].bar = "bar"
+service[2][1]= "baz"
+service[2][2].zoo = 11
+service[4][3]= true
+
+foo[0].maa[0] = 1
+foo[0].maa[1] = 2
+
+service."my.package.path.bean.group.threadCount"=12
+----
+
 === Reading the config
 
 [source, clojure]
