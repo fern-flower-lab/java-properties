@@ -18,7 +18,8 @@
           overrides (env-props)]
       (.load props reader)
       (into {} (for [[k v] props]
-                 [k (try (read-string (get overrides k v))
+                 [k (try (binding [*read-eval* false]
+                           (read-string (get overrides k v)))
                          (catch NumberFormatException _
                            (str (get overrides k v))))])))))
 
